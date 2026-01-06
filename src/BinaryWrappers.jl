@@ -22,8 +22,9 @@ function shell_script_wrapper_contents(libpath::String, sourcebinary::String)
     # the LIBPATH. This means \$0 will point to our wrapper.
     # For 4ti2 this means that its own wrapper scripts will call our wrapper for the
     # binaries, so strictly speaking adjusting the LIBPATH here is not necessary.
+
+    # The shebang line needs to be added by the caller.
     return """
-        #!/bin/sh
         # We cannot run shell scripts directly as macOS will remove
         # DYLD_FALLBACK_LIBRARY_PATH for any subshells.
         # So we source the original script instead.
@@ -64,9 +65,9 @@ function generate_wrappers(m::Module, caller::Union{Module, Base.UUID, Nothing})
             # because it might be a binary without any linebreaks
             # longest relevant start: length("#!/usr/bin/env perl") == 19
             shebang = String(read(joinpath(bindir, bin), 19))
-            if match(shellre, shebang) !== nothing
+            if (m = match(shellre, shebang); m !== nothing)
                 # shell scripts use a different wrapper because macOS...
-                write(tmpio, shell_script_wrapper_contents(libpath, sourcebinary))
+                write(tmpio, m.match * "\n" * shell_script_wrapper_contents(libpath, sourcebinary))
             elseif match(perlre, shebang) !== nothing
                 write(tmpio, perl_script_wrapper_contents(libpath, sourcebinary))
             else
