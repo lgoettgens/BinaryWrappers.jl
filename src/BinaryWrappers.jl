@@ -60,7 +60,10 @@ function generate_wrappers(m::Module, caller::Union{Module, Base.UUID, Nothing})
     for bin in readdir(bindir)
         if isfile(joinpath(bindir, bin))
             (tmpfile, tmpio) = mktemp(binpath(""); cleanup=false)
-            shebang = readline(joinpath(bindir, bin))
+            # we don't want to use readline here
+            # because it might be a binary without any linebreaks
+            # longest relevant start: length("#!/usr/bin/env perl") == 19
+            shebang = String(read(joinpath(bindir, bin), 19))
             if match(shellre, shebang) !== nothing
                 # shell scripts use a different wrapper because macOS...
                 write(tmpio, shell_script_wrapper_contents(libpath, sourcebinary))
