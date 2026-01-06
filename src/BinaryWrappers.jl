@@ -23,6 +23,7 @@ function shell_script_wrapper_contents(libpath::String, sourcebinary::String)
     # For 4ti2 this means that its own wrapper scripts will call our wrapper for the
     # binaries, so strictly speaking adjusting the LIBPATH here is not necessary.
     return """
+        #!/bin/sh
         # We cannot run shell scripts directly as macOS will remove
         # DYLD_FALLBACK_LIBRARY_PATH for any subshells.
         # So we source the original script instead.
@@ -53,13 +54,18 @@ function generate_wrappers(m::Module, caller::Union{Module, Base.UUID, Nothing})
     # POSIX compatible shells
     shellre = r"^#!/bin/(ba|da|z|k)?sh"
 
+    # Perl scripts
+    perlre = r"^#!/usr/bin/(perl|env perl)"
+
     for bin in readdir(bindir)
         if isfile(joinpath(bindir, bin))
             (tmpfile, tmpio) = mktemp(binpath(""); cleanup=false)
             shebang = readline(joinpath(bindir, bin))
             if match(shellre, shebang) !== nothing
                 # shell scripts use a different wrapper because macOS...
-                write(tmpio, "#!/bin/sh\n" * shell_script_wrapper_contents(libpath, sourcebinary))
+                write(tmpio, shell_script_wrapper_contents(libpath, sourcebinary))
+            elseif match(perlre, shebang) !== nothing
+                write(tmpio, perl_script_wrapper_contents(libpath, sourcebinary))
             else
                 write(tmpio, wrapper_contents(libpath, sourcebinary))
             end
