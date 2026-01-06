@@ -31,6 +31,11 @@ function shell_script_wrapper_contents(libpath::String, sourcebinary::String)
         """
 end
 
+# defined in Perl_jllExt
+function perl_script_wrapper_contents(_, _)
+    error("`perl_script_wrapper_contents` needs `Perl_jll` to be loaded.")
+end
+
 # use @generate_wrappers instead to automatically deduce the calling module
 function generate_wrappers(m::Module, caller::Union{Module, Base.UUID, Nothing})
     # we generate wrappers per minor julia version

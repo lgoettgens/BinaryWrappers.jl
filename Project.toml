@@ -7,10 +7,17 @@ version = "0.1.3"
 JLLWrappers = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 Scratch = "6c6a2e73-6563-6170-7368-637461726353"
 
+[weakdeps]
+Perl_jll = "83958c19-0796-5285-893e-a1267f8ec499"
+
+[extensions]
+Perl_jllExt = "Perl_jll"
+
 [compat]
 JLLWrappers = "1.2"
+Perl_jll = "5.34.1"
 Scratch = "1.1"
-julia = "1.6"
+julia = "1.10"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
